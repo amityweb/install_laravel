@@ -4,6 +4,8 @@
 #   Adapted by Laurence Cope 
 #	Based on https://github.com/natanshalva/Laravel-install
 #
+#	Download: 
+#
 
 
 # ------- Set some Variables -----------
@@ -26,19 +28,25 @@ fi
 _subdir=$1.$_domain
 _dir="/home/$USER/domains/$_subdir"
 
+
 # ------- Create Sub Domain -----------
 
-sudo virtualmin create-domain --domain $_subdir --parent $_domain --pass $_pass --default-features
+
+echo $_pass | sudo -S virtualmin create-domain --domain $_subdir --parent $_domain --pass $_pass --default-features
 
 
 # ------- Laravel Download -----------
+
 
 printf "\n Fetching Laravel 4 from: $_laravel\n\r"
 
 printf "\n Downloading and unzipping Laravel 4\n\r";
 wget $_laravel ;
 
+
 # ------- Laravel Unzip -----------
+
+
 mv master $_dir/laravel.zip
 cd $_dir;
 unzip 'laravel.zip' ;
@@ -57,18 +65,31 @@ mv public/* public_html
 mv public/.* public_html
 rm -Rf public
 
+
+# ------- Database Config -----------
+
+printf "\n Configuring database name and the user in Laravel 4 config $_dir/app/config/database.php"
+
+printf "\n create app/config/database.php.orig file \n"
+mv app/config/database.php app/config/database.php.orig ;
+
+sed "s/'database'  => 'database'/'database'  => '$1'/g  
+     s/'username'  => 'root'/'username'  => '$USER'/g  
+     s/'password'  => ''/'password'  => '$_pass'/g"  app/config/database.php.orig > app/config/database.php
+
+
 # ------- Composer Install -----------
 
 
 printf "\n install composer \n"
 eval "curl -s https://getcomposer.org/installer | php"
 
-if [ -d /usr/local/bin/composer ] ; then
+if [ -f /usr/local/bin/composer ] ; then
     echo "ok, we see you have composer file in /usr/local/bin/composer"
 else 
    echo "we are moving the composer to /usr/local/bin/composer \n
    for more info: http://getcomposer.org/doc/00-intro.md" 
-   eval "cp composer.phar /usr/local/bin/composer" 
+   eval "sudo cp composer.phar /usr/local/bin/composer" 
 fi 
 
 
@@ -82,8 +103,6 @@ else
 fi  
 
 
-pwd ;
-
 # ------- Artisan -----------
 
 if [ -f ./artisan ] ; then 
@@ -95,34 +114,10 @@ else
     return;
 fi  
 
-# ------- Create Database -----------
 
-printf "\n \n Create database (y/n) \n\r"
-read answer
-if [ $answer = y ] ; then
-
-    _db="$USER"_$1
-	
-	virtualmin create-database.pl --domain $_domain --name $_db --type mysql
-
-    printf  "\n \n ---------- Database installation complete --------------- \n"
-
-    printf "\n Configuring database name and the user in Laravel 4 config $_dir/app/config/database.php"
-
-    printf "\n create app/config/database.php.orig file \n"
-    mv app/config/database.php app/config/database.php.orig ;
-
-    sed "s/'database'  => 'database'/'database'  => '$_db'/g  
-         s/'username'  => 'root'/'username'  => '$USER'/g  
-         s/'password'  => ''/'password'  => '$_pass'/g"  app/config/database.php.orig > app/config/database.php
-
-fi
-
-
-
-
-
+# ------- FINISH -----------
 
 printf "\n \n ************ DONE! **************  \n \n" ;
 
+printf "\n \n You can access your app at http://$_subdir \n \n" ;
 
