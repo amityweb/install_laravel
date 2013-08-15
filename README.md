@@ -32,4 +32,4 @@ Change the domain settings at the top to specifiy which Virtualmin server you us
 
 And then run:
 
-    sh install_laravel.sh
+    sh install_laravel.sh project-name
