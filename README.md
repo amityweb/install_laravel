@@ -22,7 +22,7 @@ Installation script for Laravel 4 (inc. Generator Guard and Profiler packages)
 
 Download the script to your local machine with this command: 
 
-    wget --no-check-certificate https://github.com/amityweb/install-laravel/raw/master/install_laravel.sh 
+    wget --no-check-certificate https://github.com/amityweb/install_laravel/raw/master/install_laravel.sh 
 
 Set file permissions:
 
