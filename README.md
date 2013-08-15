@@ -1,14 +1,14 @@
 Laravel-install
 ===============
 
-Installation script for Laravel 4 (inc. Generator Guard and Profiler packages)
+Installation script for Laravel
 
 
 ## This script does the following:
 
-1 - Create project directory 
+1 - Create Virtualmin Sub-Server from project name and domain supplied in file 
 
-2 - Download the Laravel 4 master
+2 - Download the Laravel master
 
 3 - Install and run composer 
 
@@ -27,6 +27,8 @@ Download the script to your local machine with this command:
 Set file permissions:
 
     chmod 755 install_laravel.sh
+
+Change the domain settings at the top to specifiy which Virtualmin server you user is in
 
 And then run:
 
