@@ -1,7 +1,7 @@
 Laravel-install
 ===============
 
-Installation script for Laravel
+Installation script for Laravel for Virtualmin Servers
 
 
 ## This script does the following:
