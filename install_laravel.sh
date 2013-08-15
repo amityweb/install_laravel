@@ -4,61 +4,45 @@
 #   Adapted by Laurence Cope 
 #	Based on https://github.com/natanshalva/Laravel-install
 #
-#	Download: 
-#
 
-# install laravel 4 
 
-if [ $# -ne 0 ]
-   then
-   echo "Please enter a folder to create; Usage $0 <dir\>"
-   exit 2
-fi
-   
-_dir="$1"
+# ------- Set some Variables -----------
+_domain=playground.amitywebsolutions.co.uk
+_laravel="https://github.com/laravel/laravel/archive/master.zip"
 
-if [ -d $_dir ] ; then
+# ------- Enter Password -----------
+printf "\n Enter your password \n\r"
+stty -echo
+read _pass
+stty echo
 
-    printf "\n \n The directory: $_dir already exist. would you like to delete it first? (y/n) \n\r" ;
-    read answer
-    if [ $answer = y ] ; then
-        rm -rf $_dir ;
-    else 
-        return
-    fi  
+# ------- Choose Project Name -----------
+
+if [ "$#" == "0" ]; then
+	printf "\n\rPlease enter a project name\n\r\n\rUsage $0 <dir>\n\r\n\r"
+    exit 1
 fi
 
-printf "\n \n Creating new dir name: $_dir \n \n\r"
+_subdir=$1.$_domain
+_dir="/home/$USER/domains/$_subdir"
 
-mkdir $_dir
+# ------- Create Sub Domain -----------
 
-printf "\n Assigning $_dir 777 permissions \n\r"
-chmod -R 777 $_dir
+sudo virtualmin create-domain --domain $_subdir --parent $_domain --pass $_pass --default-features
 
-cd $_dir; 
-
-pwd ;
 
 # ------- Laravel Download -----------
 
-_laravel4="https://github.com/laravel/laravel/archive/master.zip"
-
-printf "\n Fetching Laravel 4 from: $_laravel4\n\r"
+printf "\n Fetching Laravel 4 from: $_laravel\n\r"
 
 printf "\n Downloading and unzipping Laravel 4\n\r";
-wget $_laravel4 ;
+wget $_laravel ;
 
 # ------- Laravel Unzip -----------
-
-mv master laravel.zip
+mv master $_dir/laravel.zip
+cd $_dir;
 unzip 'laravel.zip' ;
 
-
-printf "\n Assigning $_dir 777 permissions \n" ;
-chmod -R 777 ../$_dir ;
-
-
-pwd ;
 rsync -avz laravel-master/ ./
 printf "\n we are in: " ;
 pwd
@@ -68,7 +52,10 @@ ls -la;
 printf "\n Removing zip and laravel-develop folder \n"
 rm -rf laravel-master laravel.zip ;
 
-
+# Move public files to public_html
+mv public/* public_html
+mv public/.* public_html
+rm -Rf public
 
 # ------- Composer Install -----------
 
@@ -108,49 +95,32 @@ else
     return;
 fi  
 
-
 # ------- Create Database -----------
 
-printf "\n \n Create database with the same name as the file directory (y/n) \n\r"
+printf "\n \n Create database (y/n) \n\r"
 read answer
 if [ $answer = y ] ; then
 
-    printf "\n Enter mysql user name \n\r"
-    read _user
-
-    printf "\n Enter mysql password \n\r"
-    read _pass
-
-	_db = $_user_$_dir
+    _db="$USER"_$1
 	
-    if [ -d /var/lib/mysql/$_db ] ; then
-
-        printf "\n Database already exists, whould you like to delete it and create new one ? (y/n) \n\r"
-        read answer
-        if [ $answer = y ] ; then
-            mysqladmin -u $_user -p"$_pass" drop $_db ;
-            printf "\n Deleting database \n"
-            printf "\n Creating new database $_db \n "
-            mysqladmin -u $_user -p"$_pass" create $_db
-        fi
-
-    else
-        printf "\n Creating database $_db \n "
-        mysqladmin -u $_user -p"$_pass" create $_db
-    fi
+	virtualmin create-database.pl --domain $_domain --name $_db --type mysql
 
     printf  "\n \n ---------- Database installation complete --------------- \n"
 
-    printf "\n Configuring database name and the user in Laravel 4 config ./app/config/database.php"
+    printf "\n Configuring database name and the user in Laravel 4 config $_dir/app/config/database.php"
 
-    printf "\n create ./app/config/database.php.orig file \n"
-    mv ./app/config/database.php ./app/config/database.php.orig ;
+    printf "\n create app/config/database.php.orig file \n"
+    mv app/config/database.php app/config/database.php.orig ;
 
     sed "s/'database'  => 'database'/'database'  => '$_db'/g  
-         s/'username'  => 'root'/'username'  => '$_user'/g  
-         s/'password'  => ''/'password'  => '$_pass'/g"  ./app/config/database.php.orig > ./app/config/database.php
+         s/'username'  => 'root'/'username'  => '$USER'/g  
+         s/'password'  => ''/'password'  => '$_pass'/g"  app/config/database.php.orig > app/config/database.php
 
 fi
+
+
+
+
 
 
 printf "\n \n ************ DONE! **************  \n \n" ;
